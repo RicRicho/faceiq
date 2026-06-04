@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "Browser-only FaceIQ proof-of-concept for patent-pending identity verification.",
+  "description": "Browser-only FaceIQ proof-of-concept for real-human identity verification.",
   "scripts": {
     "test": "node --test",
     "start": "python3 -m http.server 5173"
@@ -12,7 +12,7 @@
     "identity-verification",
     "trust-safety",
     "biometrics",
-    "patent-pending"
+    "online-safety"
   ],
   "license": "UNLICENSED"
 }

@@ -1,8 +1,8 @@
 # FaceIQ
 
-**FaceIQ is patent-pending identity-verification infrastructure for proving that the person behind an online interaction is the real human they claim to be.**
+**FaceIQ helps prove that the person behind an online interaction is the real human they claim to be.**
 
-FaceIQ is designed for moments where trust matters but platform-native identity checks are missing: a dating-app match before meeting, a marketplace seller before payment, a child-safety check, or any message thread where impersonation, catfishing, synthetic media, or stolen profile photos create risk.
+It is built for the moments where trust matters but the platform gives you almost nothing: a dating-app match before meeting, a marketplace seller before payment, a child-safety check, or any message thread where impersonation, catfishing, synthetic media, or stolen profile photos create risk.
 
 ## The simple idea
 
@@ -33,18 +33,21 @@ FaceIQ can support several focused products on the same trust primitive:
 - **TrustTrade** — marketplace anti-scam verification.
 - **KidCheck** — parent-led profile reality checks for child safety.
 
-## Status
+## Current prototype
 
-FaceIQ is a Ric Richardson invention and is being prepared as a public-facing project surface.
+This repository contains a browser proof-of-concept for the FaceIQ challenge flow:
 
-- Patent status: **patent pending**
-- Current phase: browser proof-of-concept web app and public README / project positioning
-- Data posture: designed around a browser-based challenge flow; production privacy/security architecture to be confirmed before launch
-- Disclosure level: public summary only; exact patent numbers are intentionally omitted here
+- camera capture for the driver's licence image
+- before/after live face captures around the biometric check
+- browser/platform biometric attempt where supported
+- confidence scoring for the match
+- licence image quality / fake-document warning signals
+
+The prototype is intentionally lightweight and browser-side. Production identity, biometric, document-fraud, privacy, and security architecture would need hardening before real-world reliance.
 
 ## Partnership / licensing
 
-FaceIQ is suited to partners operating in identity, trust and safety, online dating, marketplaces, child safety, social platforms, and fraud prevention.
+FaceIQ is a Ric Richardson invention with patent-pending protection. It is suited to partners operating in identity, trust and safety, online dating, marketplaces, child safety, social platforms, and fraud prevention.
 
 For licensing, partnership, or pilot discussions, contact Ric Richardson via the RicRicho GitHub profile.
 
