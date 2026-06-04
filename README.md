@@ -6,11 +6,11 @@ FaceIQ is designed for moments where trust matters but platform-native identity 
 
 ## The simple idea
 
-Send a FaceIQ challenge link. The recipient opens it in a browser, photographs their driver's licence, and completes a fast biometric-backed face check using the device's native Face ID or Android biometric flow.
+The FaceIQ web app opens in a browser window, photographs the user's driver's licence, then runs a fast biometric-backed face check using the device's native Face ID or Android biometric flow.
 
-FaceIQ compares the document photo with live face images captured immediately around the biometric check, then displays a confidence level for the match. The driver's licence image is also assessed for signs of being fake or manipulated.
+FaceIQ compares the driver's-licence image to photos taken immediately before and after the biometric check, executed as one roughly two-second process. It then displays a confidence level for the match. The driver's licence is also assessed for signs of looking fake or manipulated.
 
-The aim is to make impersonation much harder: a scammer should not be able to pass by simply holding up a photo, wearing a mask, or using another person's device.
+The aim is to make impersonation much harder: a person should not be able to pass by using a photo, a mask, or someone else's device.
 
 FaceIQ is deliberately **platform-independent**. It is not tied to one dating app, marketplace, chat app, or social network. It can work at the URL layer wherever a link can be sent.
 
