@@ -38,7 +38,7 @@ FaceIQ can support several focused products on the same trust primitive:
 FaceIQ is a Ric Richardson invention and is being prepared as a public-facing project surface.
 
 - Patent status: **patent pending**
-- Current phase: public README / project positioning
+- Current phase: browser proof-of-concept web app and public README / project positioning
 - Data posture: designed around a browser-based challenge flow; production privacy/security architecture to be confirmed before launch
 - Disclosure level: public summary only; exact patent numbers are intentionally omitted here
 

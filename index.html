@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FaceIQ — Browser Challenge Demo</title>
+    <meta name="description" content="FaceIQ browser proof-of-concept for patent-pending identity verification.">
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Patent pending · Browser proof-of-concept</p>
+        <h1>FaceIQ</h1>
+        <p class="lead">A web app flow for checking whether a driver’s licence image, live face captures, and native Face ID / Android biometric presence line up.</p>
+      </section>
+
+      <section class="panel warning">
+        <strong>Demo boundary:</strong> this is a public prototype surface. It does not store uploads, does not contact a server, and uses lightweight browser-side scoring only. Production identity, document-fraud, privacy, and biometric architecture would need hardened implementation before real-world reliance.
+      </section>
+
+      <section class="grid">
+        <div class="panel camera-panel">
+          <video id="camera" playsinline muted></video>
+          <canvas id="captureCanvas" hidden></canvas>
+          <p id="status" class="status">Start the camera to begin.</p>
+          <div class="actions">
+            <button id="startCamera">1. Start camera</button>
+            <button id="captureLicense" disabled>2. Capture driver’s licence</button>
+            <button id="runCheck" disabled>3. Run 2-second biometric check</button>
+            <button id="showResult" disabled>4. Show confidence</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>How the flow works</h2>
+          <ol>
+            <li>The browser opens the FaceIQ challenge web app.</li>
+            <li>The user photographs their driver’s licence.</li>
+            <li>The app captures a live face image immediately before native biometric verification.</li>
+            <li>The app triggers the browser/platform biometric check where available.</li>
+            <li>The app captures another live face image immediately after the check.</li>
+            <li>A confidence level is displayed, including licence-image quality/fake-document signals.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Captured frames</h2>
+        <div id="captures" class="captures"></div>
+      </section>
+
+      <section id="result" class="panel result" hidden>
+        <h2>Result</h2>
+        <div class="score"><span id="confidence">--%</span><small id="level">--</small></div>
+        <p><strong>Decision:</strong> <span id="decision"></span></p>
+        <p id="message"></p>
+        <p><strong>Licence assessment:</strong> <span id="licenseFlags"></span></p>
+        <ul id="parts"></ul>
+      </section>
+    </main>
+
+    <script type="module" src="./src/app.mjs"></script>
+  </body>
+</html>
