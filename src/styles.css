@@ -66,6 +66,53 @@ h2 { margin-top: 0; }
   backdrop-filter: blur(18px);
 }
 
+.biometric-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 6, 9, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.biometric-overlay[hidden] { display: none; }
+
+.biometric-card {
+  width: min(440px, 100%);
+  padding: 28px;
+  border-radius: 28px;
+  text-align: center;
+  background: #071014;
+  border: 1px solid rgba(112, 240, 208, 0.5);
+  box-shadow: 0 30px 100px rgba(0,0,0,0.55);
+}
+
+.face-ring {
+  width: 108px;
+  height: 108px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 32px;
+  font-size: 5rem;
+  color: #70f0d0;
+  border: 3px solid #70f0d0;
+  animation: pulse 1s ease-in-out infinite alternate;
+}
+
+.countdown {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #70f0d0;
+}
+
+@keyframes pulse {
+  from { transform: scale(0.96); opacity: 0.72; }
+  to { transform: scale(1.03); opacity: 1; }
+}
+
 .warning {
   color: #ffe9b8;
   border-color: rgba(255, 209, 102, 0.35);

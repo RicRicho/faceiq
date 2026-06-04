@@ -97,11 +97,20 @@ function randomBytes(length) {
   return bytes;
 }
 
-function withTimeout(promise, milliseconds, message) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(message)), milliseconds)),
-  ]);
+function sleep(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function startCountdown(seconds) {
+  const countdown = $('#countdown');
+  const started = performance.now();
+  const tick = () => {
+    const elapsed = (performance.now() - started) / 1000;
+    const remaining = Math.max(0, seconds - elapsed);
+    countdown.textContent = remaining.toFixed(1);
+    if (remaining > 0 && !$('#biometricOverlay').hidden) requestAnimationFrame(tick);
+  };
+  tick();
 }
 
 async function triggerPlatformBiometric() {
@@ -144,24 +153,34 @@ async function triggerPlatformBiometric() {
 
 async function runBiometricCheck() {
   setStatus('1/3 Capturing BEFORE photo now…');
-  state.before = captureFrame('Before biometric');
+  state.before = captureFrame('Before Face ID / Android prompt');
+  state.biometricVerified = false;
 
-  try {
-    setStatus('2/3 Face ID / Android biometric prompt should appear now. Approve it on this device.');
-    await withTimeout(triggerPlatformBiometric(), 18000, 'Biometric prompt timed out or was dismissed.');
-    state.biometricVerified = true;
-  } catch (error) {
-    state.biometricVerified = false;
-    console.warn('Biometric check was not verified in this proof-of-concept:', error.message);
-    setStatus(`2/3 Biometric was not verified: ${error.message}`);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-  }
+  $('#biometricOverlay').hidden = false;
+  setStatus('2/3 Face ID / Android biometric should appear now. Approve it if the phone asks.');
+  startCountdown(2.0);
 
+  const biometricAttempt = triggerPlatformBiometric()
+    .then(() => {
+      state.biometricVerified = true;
+      setStatus('Face ID / Android biometric approved. Capturing AFTER photo…');
+    })
+    .catch((error) => {
+      state.biometricVerified = false;
+      console.warn('Biometric check was not verified in this proof-of-concept:', error.message);
+    });
+
+  await sleep(2200);
+  $('#biometricOverlay').hidden = true;
   setStatus('3/3 Capturing AFTER photo now…');
-  state.after = captureFrame('After biometric');
+  state.after = captureFrame('After Face ID / Android prompt');
+
+  // Let a prompt that completed just after the after-frame still mark the result.
+  await Promise.race([biometricAttempt, sleep(300)]);
+
   enable('#runCheck');
   enable('#showResult');
-  setStatus(state.biometricVerified ? 'Face ID / Android biometric verified. Ready to calculate confidence.' : 'Biometric not verified. You can still show the capped review result, or rerun the biometric check.');
+  setStatus(state.biometricVerified ? 'Face ID / Android biometric verified. Ready to calculate confidence.' : 'Biometric prompt was not confirmed. You can still show the capped review result, or rerun the biometric step.');
 }
 
 function showResult() {
