@@ -3,70 +3,51 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FaceIQ — Browser Challenge Demo</title>
-    <meta name="description" content="FaceIQ browser proof-of-concept for real-human identity verification.">
+    <title>FaceIQ — Verify the real person</title>
+    <meta name="description" content="FaceIQ browser demo for real-human identity verification.">
     <link rel="stylesheet" href="./src/styles.css">
   </head>
   <body>
-    <main class="shell">
-      <section class="hero">
-        <p class="eyebrow">Browser proof-of-concept · Real-human verification</p>
-        <h1>FaceIQ</h1>
-        <p class="lead">A web app flow for checking whether a driver’s licence image, live captures before and after a visible Face ID / Android biometric prompt, and biometric presence line up.</p>
+    <main class="demo-shell">
+      <section class="screen active" data-screen="start">
+        <p class="eyebrow">FaceIQ</p>
+        <h1>Know who is really there.</h1>
+        <p class="subhead">A quick browser check compares a licence, a live face, and the phone’s own biometric proof.</p>
+        <button id="startDemo">Start check</button>
       </section>
 
-      <section class="panel warning">
-        <strong>Demo boundary:</strong> this is a public prototype surface. It does not store uploads, does not contact a server, and uses lightweight browser-side scoring only. Production identity, document-fraud, privacy, and biometric architecture would need hardened implementation before real-world reliance.
+      <section class="screen" data-screen="license">
+        <p class="eyebrow">Step 1</p>
+        <h1>Show the driver’s licence.</h1>
+        <video id="camera" playsinline muted></video>
+        <canvas id="captureCanvas" hidden></canvas>
+        <button id="captureLicense">Take licence photo</button>
       </section>
 
-      <div id="biometricOverlay" class="biometric-overlay" hidden>
-        <div class="biometric-card">
-          <div class="face-ring">◎</div>
-          <h2>Face ID / Android biometric now</h2>
-          <p>Approve the native biometric prompt if it appears. FaceIQ is capturing the “before” and “after” photos around this step.</p>
-          <p class="countdown"><span id="countdown">2.0</span>s</p>
-        </div>
-      </div>
-
-      <section class="grid">
-        <div class="panel camera-panel">
-          <video id="camera" playsinline muted></video>
-          <canvas id="captureCanvas" hidden></canvas>
-          <p id="status" class="status">Start the camera to begin.</p>
-          <div class="actions">
-            <button id="startCamera">1. Start camera</button>
-            <button id="captureLicense" disabled>2. Capture driver’s licence</button>
-            <button id="runCheck" disabled>3. Show Face ID / Android prompt</button>
-            <button id="showResult" disabled>4. Show confidence</button>
-          </div>
-        </div>
-
-        <div class="panel">
-          <h2>How the flow works</h2>
-          <ol>
-            <li>The browser opens the FaceIQ challenge web app.</li>
-            <li>The user photographs their driver’s licence.</li>
-            <li>The app captures a live face image immediately before the biometric step.</li>
-            <li>A native Face ID / Android biometric prompt should appear. Approve it on the device.</li>
-            <li>The app captures another live face image immediately after that prompt completes or times out.</li>
-            <li>A confidence level is displayed, including licence-image quality/fake-document signals.</li>
-          </ol>
-        </div>
+      <section class="screen" data-screen="biometric">
+        <p class="eyebrow">Step 2</p>
+        <h1>Confirm the person holding the phone.</h1>
+        <p class="subhead">Face ID or Android biometrics should appear now.</p>
+        <div class="biometric-mark">◎</div>
+        <p class="timer"><span id="countdown">2.0</span>s</p>
+        <button id="runBiometric">Run face check</button>
       </section>
 
-      <section class="panel">
-        <h2>Captured frames</h2>
-        <div id="captures" class="captures"></div>
+      <section class="screen" data-screen="result">
+        <p class="eyebrow">Result</p>
+        <h1 id="resultTitle">Verified</h1>
+        <p id="resultCopy" class="subhead">The licence, live face and device biometric lined up.</p>
+        <button id="resetDemo">Run again</button>
       </section>
 
-      <section id="result" class="panel result" hidden>
-        <h2>Result</h2>
-        <div class="score"><span id="confidence">--%</span><small id="level">--</small></div>
-        <p><strong>Decision:</strong> <span id="decision"></span></p>
-        <p id="message"></p>
-        <p><strong>Licence assessment:</strong> <span id="licenseFlags"></span></p>
-        <ul id="parts"></ul>
-      </section>
+      <button id="detailsToggle" class="details-link" type="button">How this demo works</button>
+      <aside id="details" class="details" hidden>
+        <button id="detailsClose" class="details-close" type="button">Close</button>
+        <h2>How this demo works</h2>
+        <p>This public prototype runs in the browser. It does not upload or store photos.</p>
+        <p>It captures a licence frame, captures live frames before and after the biometric moment, attempts a platform biometric prompt through WebAuthn, then reduces the result to a buyer-friendly outcome.</p>
+        <p>Production use would need hardened identity, biometric, document-fraud, privacy and security architecture.</p>
+      </aside>
     </main>
 
     <script type="module" src="./src/app.mjs"></script>

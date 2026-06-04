@@ -6,13 +6,15 @@ It is built for the moments where trust matters but the platform gives you almos
 
 ## The simple idea
 
-The FaceIQ web app opens in a browser window, photographs the user's driver's licence, then runs a fast biometric-backed face check using the device's native Face ID or Android biometric flow.
+A person opens FaceIQ in the browser.
 
-FaceIQ compares the driver's-licence image to photos taken immediately before and after the biometric check, executed as one roughly two-second process. It then displays a confidence level for the match. The driver's licence is also assessed for signs of looking fake or manipulated.
+They show their driver’s licence.
 
-The aim is to make impersonation much harder: a person should not be able to pass by using a photo, a mask, or someone else's device.
+FaceIQ asks the phone to confirm the person holding it with Face ID or Android biometrics.
 
-FaceIQ is deliberately **platform-independent**. It is not tied to one dating app, marketplace, chat app, or social network. It can work at the URL layer wherever a link can be sent.
+Then FaceIQ gives the sender a plain result: **Verified** or **Could not verify**.
+
+No scoring dashboard. No technical maze. Just a fast answer to the question: *is this the real person?*
 
 ## Why it matters
 
@@ -25,25 +27,16 @@ FaceIQ targets that gap:
 - **Child-safety checks** — help parents confirm who a child is really interacting with.
 - **Creator and community trust** — give real people a way to prove presence without forcing every platform to build its own identity layer.
 
-## Product wedges
+## Current demo
 
-FaceIQ can support several focused products on the same trust primitive:
+The current public demo is intentionally simple: four screens, one action per screen, and a buyer-friendly result.
 
-- **RealHuman** — dating, creator, and catfish verification.
-- **TrustTrade** — marketplace anti-scam verification.
-- **KidCheck** — parent-led profile reality checks for child safety.
+- Start check
+- Show the driver’s licence
+- Run the phone biometric check
+- See the result
 
-## Current prototype
-
-This repository contains a browser proof-of-concept for the FaceIQ challenge flow:
-
-- camera capture for the driver's licence image
-- before/after live face captures around the biometric check
-- browser/platform biometric attempt where supported
-- confidence scoring for the match
-- licence image quality / fake-document warning signals
-
-The prototype is intentionally lightweight and browser-side. Production identity, biometric, document-fraud, privacy, and security architecture would need hardening before real-world reliance.
+Live demo: https://faceiq-kmfw.onrender.com/
 
 ## Partnership / licensing
 

@@ -14,34 +14,32 @@ const video = $('#camera');
 const canvas = $('#captureCanvas');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-function setStatus(message) {
-  $('#status').textContent = message;
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach((screen) => {
+    screen.classList.toggle('active', screen.dataset.screen === name);
+  });
 }
 
-function enable(id, enabled = true) {
-  $(id).disabled = !enabled;
+function setBusy(button, busy, label) {
+  button.disabled = busy;
+  if (label) button.textContent = label;
 }
 
 async function startCamera() {
+  if (state.stream) return;
   state.stream = await navigator.mediaDevices.getUserMedia({
     video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
     audio: false,
   });
   video.srcObject = state.stream;
   await video.play();
-  enable('#captureLicense');
-  setStatus('Camera ready. Photograph the driver’s licence first.');
 }
 
-function captureFrame(label) {
+function captureFrame() {
   canvas.width = video.videoWidth || 960;
   canvas.height = video.videoHeight || 540;
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-  const metrics = imageMetrics(imageData);
-  addThumb(label, dataUrl, metrics);
-  return metrics;
+  return imageMetrics(ctx.getImageData(0, 0, canvas.width, canvas.height));
 }
 
 function imageMetrics(imageData) {
@@ -85,12 +83,6 @@ function imageMetrics(imageData) {
   };
 }
 
-function addThumb(label, src, metrics) {
-  const item = document.createElement('figure');
-  item.innerHTML = `<img src="${src}" alt="${label} capture"><figcaption>${label}<br><span>${metrics.brightness} bright · ${metrics.contrast} contrast · ${metrics.sharpness} sharp</span></figcaption>`;
-  $('#captures').appendChild(item);
-}
-
 function randomBytes(length) {
   const bytes = new Uint8Array(length);
   crypto.getRandomValues(bytes);
@@ -108,25 +100,21 @@ function startCountdown(seconds) {
     const elapsed = (performance.now() - started) / 1000;
     const remaining = Math.max(0, seconds - elapsed);
     countdown.textContent = remaining.toFixed(1);
-    if (remaining > 0 && !$('#biometricOverlay').hidden) requestAnimationFrame(tick);
+    if (remaining > 0) requestAnimationFrame(tick);
   };
   tick();
 }
 
 async function triggerPlatformBiometric() {
   if (!window.PublicKeyCredential || !navigator.credentials?.create) {
-    throw new Error('This browser does not expose the platform biometric prompt to web apps.');
+    throw new Error('Platform biometric prompt unavailable.');
   }
 
   if (PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
     const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    if (!available) {
-      throw new Error('No Face ID / Android biometric authenticator is available to this browser.');
-    }
+    if (!available) throw new Error('No platform biometric available.');
   }
 
-  // Proof-of-concept only: creating a throwaway platform credential is the most reliable
-  // browser API path for visibly kicking the native Face ID / Android biometric sheet.
   return navigator.credentials.create({
     publicKey: {
       challenge: randomBytes(32),
@@ -151,39 +139,26 @@ async function triggerPlatformBiometric() {
   });
 }
 
-async function runBiometricCheck() {
-  setStatus('1/3 Capturing BEFORE photo now…');
-  state.before = captureFrame('Before Face ID / Android prompt');
+async function runFaceCheck() {
+  const button = $('#runBiometric');
+  setBusy(button, true, 'Checking…');
+  state.before = captureFrame();
   state.biometricVerified = false;
-
-  $('#biometricOverlay').hidden = false;
-  setStatus('2/3 Face ID / Android biometric should appear now. Approve it if the phone asks.');
   startCountdown(2.0);
 
   const biometricAttempt = triggerPlatformBiometric()
-    .then(() => {
-      state.biometricVerified = true;
-      setStatus('Face ID / Android biometric approved. Capturing AFTER photo…');
-    })
-    .catch((error) => {
-      state.biometricVerified = false;
-      console.warn('Biometric check was not verified in this proof-of-concept:', error.message);
-    });
+    .then(() => { state.biometricVerified = true; })
+    .catch((error) => console.warn('Biometric prompt not confirmed:', error.message));
 
   await sleep(2200);
-  $('#biometricOverlay').hidden = true;
-  setStatus('3/3 Capturing AFTER photo now…');
-  state.after = captureFrame('After Face ID / Android prompt');
-
-  // Let a prompt that completed just after the after-frame still mark the result.
+  state.after = captureFrame();
   await Promise.race([biometricAttempt, sleep(300)]);
-
-  enable('#runCheck');
-  enable('#showResult');
-  setStatus(state.biometricVerified ? 'Face ID / Android biometric verified. Ready to calculate confidence.' : 'Biometric prompt was not confirmed. You can still show the capped review result, or rerun the biometric step.');
+  renderResult();
+  setBusy(button, false, 'Run face check');
+  showScreen('result');
 }
 
-function showResult() {
+function renderResult() {
   const licenseQuality = assessLicenseQuality(state.license);
   const match = calculateMatchConfidence({
     license: state.license,
@@ -192,39 +167,43 @@ function showResult() {
     biometricVerified: state.biometricVerified,
   });
   const summary = summarizeResult({ match, licenseQuality });
+  const verified = summary.action === 'Verified';
 
-  $('#result').hidden = false;
-  $('#confidence').textContent = `${match.percent}%`;
-  $('#level').textContent = match.level;
-  $('#decision').textContent = summary.action;
-  $('#message').textContent = summary.message;
-  $('#licenseFlags').textContent = licenseQuality.flags.length ? licenseQuality.flags.join(', ') : 'No obvious quality/fake-image flags in this demo check.';
-  $('#parts').innerHTML = `
-    <li>Live before/after consistency: ${match.parts.liveConsistency}%</li>
-    <li>Licence-to-live image similarity: ${match.parts.documentMatch}%</li>
-    <li>Native biometric check: ${match.parts.biometric}</li>
-  `;
+  $('#resultTitle').textContent = verified ? 'Verified' : 'Could not verify';
+  $('#resultCopy').textContent = verified
+    ? 'The licence, live face and phone biometric lined up.'
+    : 'The check did not produce enough confidence. Try again with better light and a clear licence photo.';
 }
 
-$('#startCamera').addEventListener('click', async () => {
+function resetDemo() {
+  state.license = null;
+  state.before = null;
+  state.after = null;
+  state.biometricVerified = false;
+  $('#countdown').textContent = '2.0';
+  showScreen('start');
+}
+
+$('#startDemo').addEventListener('click', async () => {
+  const button = $('#startDemo');
   try {
+    setBusy(button, true, 'Opening camera…');
     await startCamera();
+    showScreen('license');
   } catch (error) {
-    setStatus(`Camera failed: ${error.message}`);
+    button.textContent = 'Camera blocked — try again';
+    console.error(error);
+  } finally {
+    button.disabled = false;
   }
 });
 
 $('#captureLicense').addEventListener('click', () => {
-  state.license = captureFrame('Driver’s licence');
-  enable('#runCheck');
-  setStatus('Licence captured. Hold the phone normally and run the two-second biometric check.');
+  state.license = captureFrame();
+  showScreen('biometric');
 });
 
-$('#runCheck').addEventListener('click', async () => {
-  enable('#runCheck', false);
-  enable('#showResult', false);
-  setStatus('Starting: before photo → Face ID / Android biometric prompt → after photo. Watch for the native biometric sheet.');
-  await runBiometricCheck();
-});
-
-$('#showResult').addEventListener('click', showResult);
+$('#runBiometric').addEventListener('click', runFaceCheck);
+$('#resetDemo').addEventListener('click', resetDemo);
+$('#detailsToggle').addEventListener('click', () => { $('#details').hidden = false; });
+$('#detailsClose').addEventListener('click', () => { $('#details').hidden = true; });
