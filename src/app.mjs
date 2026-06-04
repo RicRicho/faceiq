@@ -91,35 +91,77 @@ function addThumb(label, src, metrics) {
   $('#captures').appendChild(item);
 }
 
+function randomBytes(length) {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return bytes;
+}
+
+function withTimeout(promise, milliseconds, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(message)), milliseconds)),
+  ]);
+}
+
+async function triggerPlatformBiometric() {
+  if (!window.PublicKeyCredential || !navigator.credentials?.create) {
+    throw new Error('This browser does not expose the platform biometric prompt to web apps.');
+  }
+
+  if (PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
+    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    if (!available) {
+      throw new Error('No Face ID / Android biometric authenticator is available to this browser.');
+    }
+  }
+
+  // Proof-of-concept only: creating a throwaway platform credential is the most reliable
+  // browser API path for visibly kicking the native Face ID / Android biometric sheet.
+  return navigator.credentials.create({
+    publicKey: {
+      challenge: randomBytes(32),
+      rp: { name: 'FaceIQ Demo' },
+      user: {
+        id: randomBytes(16),
+        name: `faceiq-demo-${Date.now()}@local`,
+        displayName: 'FaceIQ demo user',
+      },
+      pubKeyCredParams: [
+        { type: 'public-key', alg: -7 },
+        { type: 'public-key', alg: -257 },
+      ],
+      authenticatorSelection: {
+        authenticatorAttachment: 'platform',
+        userVerification: 'required',
+        residentKey: 'discouraged',
+      },
+      attestation: 'none',
+      timeout: 15000,
+    },
+  });
+}
+
 async function runBiometricCheck() {
+  setStatus('1/3 Capturing BEFORE photo now…');
   state.before = captureFrame('Before biometric');
 
-  const challenge = new Uint8Array(32);
-  crypto.getRandomValues(challenge);
-
   try {
-    if (!window.PublicKeyCredential || !navigator.credentials?.get) {
-      throw new Error('WebAuthn platform biometric check is not available in this browser.');
-    }
-
-    await navigator.credentials.get({
-      publicKey: {
-        challenge,
-        timeout: 2000,
-        userVerification: 'required',
-        allowCredentials: [],
-      },
-      mediation: 'optional',
-    });
+    setStatus('2/3 Face ID / Android biometric prompt should appear now. Approve it on this device.');
+    await withTimeout(triggerPlatformBiometric(), 18000, 'Biometric prompt timed out or was dismissed.');
     state.biometricVerified = true;
   } catch (error) {
     state.biometricVerified = false;
     console.warn('Biometric check was not verified in this proof-of-concept:', error.message);
+    setStatus(`2/3 Biometric was not verified: ${error.message}`);
+    await new Promise((resolve) => setTimeout(resolve, 900));
   }
 
+  setStatus('3/3 Capturing AFTER photo now…');
   state.after = captureFrame('After biometric');
+  enable('#runCheck');
   enable('#showResult');
-  setStatus(state.biometricVerified ? 'Biometric check verified. Ready to calculate confidence.' : 'Biometric not verified in this browser. Result will be capped for review.');
+  setStatus(state.biometricVerified ? 'Face ID / Android biometric verified. Ready to calculate confidence.' : 'Biometric not verified. You can still show the capped review result, or rerun the biometric check.');
 }
 
 function showResult() {
@@ -161,7 +203,8 @@ $('#captureLicense').addEventListener('click', () => {
 
 $('#runCheck').addEventListener('click', async () => {
   enable('#runCheck', false);
-  setStatus('Capturing before/after biometric frames…');
+  enable('#showResult', false);
+  setStatus('Starting: before photo → Face ID / Android biometric prompt → after photo. Watch for the native biometric sheet.');
   await runBiometricCheck();
 });
 
