@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FaceIQ — Verify the real person</title>
+    <meta name="description" content="FaceIQ browser demo for real-human identity verification.">
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <main class="demo-shell">
+      <section class="screen active" data-screen="start">
+        <p class="eyebrow">FaceIQ</p>
+        <h1>Know who is really there.</h1>
+        <p class="subhead">A quick browser check compares a licence, a live face, and the phone’s own biometric proof.</p>
+        <button id="startDemo">Start check</button>
+      </section>
+
+      <section class="screen" data-screen="license">
+        <p class="eyebrow">Step 1</p>
+        <h1>Show the driver’s licence.</h1>
+        <video id="camera" playsinline muted></video>
+        <canvas id="captureCanvas" hidden></canvas>
+        <button id="captureLicense">Take licence photo</button>
+      </section>
+
+      <section class="screen" data-screen="biometric">
+        <p class="eyebrow">Step 2</p>
+        <h1>Confirm the person holding the phone.</h1>
+        <p class="subhead">Face ID or Android biometrics should appear now.</p>
+        <div class="biometric-mark">◎</div>
+        <p class="timer"><span id="countdown">2.0</span>s</p>
+        <button id="runBiometric">Run face check</button>
+      </section>
+
+      <section class="screen" data-screen="result">
+        <p class="eyebrow">Result</p>
+        <h1 id="resultTitle">Verified</h1>
+        <p id="resultCopy" class="subhead">The licence, live face and device biometric lined up.</p>
+        <button id="resetDemo">Run again</button>
+      </section>
+
+      <button id="detailsToggle" class="details-link" type="button">How this demo works</button>
+      <aside id="details" class="details" hidden>
+        <button id="detailsClose" class="details-close" type="button">Close</button>
+        <h2>How this demo works</h2>
+        <p>This public prototype runs in the browser. It does not upload or store photos.</p>
+        <p>It captures a licence frame, captures live frames before and after the biometric moment, attempts a platform biometric prompt through WebAuthn, then reduces the result to a buyer-friendly outcome.</p>
+        <p>Production use would need hardened identity, biometric, document-fraud, privacy and security architecture.</p>
+      </aside>
+    </main>
+
+    <script type="module" src="./src/app.mjs"></script>
+  </body>
+</html>

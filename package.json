@@ -1,0 +1,18 @@
+{
+  "name": "faceiq",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Browser-only FaceIQ proof-of-concept for real-human identity verification.",
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 5173"
+  },
+  "keywords": [
+    "identity-verification",
+    "trust-safety",
+    "biometrics",
+    "online-safety"
+  ],
+  "license": "UNLICENSED"
+}
