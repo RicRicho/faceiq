@@ -13,9 +13,23 @@ permissions:
 
 jobs:
   claude:
+    # Only fire for trusted authors (write access). On a public repo this stops
+    # arbitrary commenters from triggering a secret-bearing run via "@claude".
     if: |
-      (github.event_name == 'issues' && github.event.label.name == 'claude') ||
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
+      (
+        github.event_name == 'issues' &&
+        github.event.label.name == 'claude' &&
+        (github.event.issue.author_association == 'OWNER' ||
+         github.event.issue.author_association == 'MEMBER' ||
+         github.event.issue.author_association == 'COLLABORATOR')
+      ) ||
+      (
+        github.event_name == 'issue_comment' &&
+        contains(github.event.comment.body, '@claude') &&
+        (github.event.comment.author_association == 'OWNER' ||
+         github.event.comment.author_association == 'MEMBER' ||
+         github.event.comment.author_association == 'COLLABORATOR')
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,5 +42,6 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          # Scoped to the report-back write key only. The account-wide
+          # SUPABASE_ACCESS_TOKEN is deliberately NOT exposed to this workflow.
           WARP_WRITE_KEY: ${{ secrets.WARP_WRITE_KEY }}
